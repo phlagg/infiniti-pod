@@ -1,0 +1,71 @@
+#!bash
+
+# --- CONFIGURATION ---
+# Replace this with your actual serial port (e.g., /dev/ttyUSB0, /dev/ttyACM0, /dev/tty.usbserial-xxx)
+PORT="${1:-/dev/ttyUSB0}"
+BAUD="19200"
+
+# --- SYSTEM CHECK ---
+if [ ! -e "$PORT" ]; then
+    echo -e "\033[0;31m[ERROR] Serial port '$PORT' not found.\033[0m"
+    echo "Usage: $0 [/dev/your-serial-port]"
+    exit 1
+fi
+
+# Configure serial port parameters using stty
+# 19200 baud, 8 data bits, no parity, 1 stop bit, disable echo/canonical processing
+stty -F "$PORT" $BAUD cs8 -cstopb -parenb -echo -icanon min 1 time 0
+
+echo "============================================="
+echo " Starting Infiniti-Pod Protocol Test Suite   "
+echo " Target Port: $PORT @ $BAUD baud             "
+echo "============================================="
+echo ""
+
+# Helper function to send hex payloads and print status
+send_test() {
+    local action="$1"
+    local hex_payload="$2"
+    local expected="$3"
+    local resulting_action="$4"
+
+    echo -e "\033[1;34m[TEST] Sending Command:\033[0m $action"
+    echo "  Payload (Hex):  $hex_payload"
+    echo "  Expected Byte:  $expected"
+    echo "  Expected Logic: $resulting_action"
+
+    # Convert hex string into raw binary bytes and blast down the pipeline
+    echo -ne "$hex_payload" | xxd -r -p > "$PORT"
+
+    echo -e "\033[0;32m  [✔] Bytes injected successfully.\033[0m"
+    echo "---------------------------------------------"
+
+    # Give the MCU time to process the transmission before the next payload drops
+    sleep 1.5
+}
+
+# 1. Next Track
+send_test "Next Track" \
+          "55AA0302000001FA" \
+          "0x01" \
+          "Triggers ble.KeyNext"
+
+# 2. Previous Track
+send_test "Previous Track" \
+          "55AA0302000008F3" \
+          "0x08" \
+          "Triggers ble.KeyPrevious"
+
+# 3. Play / Pause
+send_test "Play / Pause" \
+          "55AA0302000002F9" \
+          "0x02" \
+          "Triggers ble.KeyPlayPause"
+
+# 4. Release Button
+send_test "Release Button" \
+          "55AA0302000000FB" \
+          "0x00" \
+          "Safely Ignored"
+
+echo -e "\033[1;32mAll test sequences sent successfully!\033[0m"

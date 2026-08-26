@@ -1,0 +1,17 @@
+{
+  "lsp": {
+    "gopls": {
+      "settings": {
+        "gopls": {
+          "buildFlags": ["-tags=cortexm,baremetal,linux,arm,nrf52840,nrf,nrf52840_reset_uf2,softdevice,s140v6,nicenano,tinygo,purego,osusergo,math_big_pure_go,gc.conservative,scheduler.tasks,serial.usb,tinygo.unicore"],
+          "env": {
+            "GOARCH": "arm",
+            "GOARM": "6",
+            "GOOS": "linux",
+            "GOROOT": "/home/phlagg/.cache/tinygo/goroot-c170b1def98c74d42273921e57118690ed4dbee5293cc4d20d173c71b59591a9"
+          }
+        }
+      }
+    }
+  }
+}

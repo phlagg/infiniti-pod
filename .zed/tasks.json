@@ -1,0 +1,88 @@
+[
+	{
+		"label":   "TinyGo: Build (nicenano)",
+		"command": "tinygo",
+		"args": [
+			"build",
+			"-target=nicenano",
+			"."
+		],
+		"cwd": "$ZED_WORKTREE_ROOT",
+		"env": {
+			"ZED_TINYGO_MANAGED": "1"
+		},
+		"save": "all",
+		"hide": "on_success"
+	},
+	{
+		"label":   "TinyGo: Test",
+		"command": "tinygo",
+		"args": [
+			"test",
+			"./..."
+		],
+		"cwd": "$ZED_WORKTREE_ROOT",
+		"env": {
+			"ZED_TINYGO_MANAGED": "1"
+		},
+		"save": "all",
+		"hide": "on_success"
+	},
+	{
+		"label":   "TinyGo: Size report (nicenano)",
+		"command": "tinygo",
+		"args": [
+			"build",
+			"-target=nicenano",
+			"-size=short",
+			"."
+		],
+		"cwd": "$ZED_WORKTREE_ROOT",
+		"env": {
+			"ZED_TINYGO_MANAGED": "1"
+		},
+		"save": "all",
+		"hide": "on_success"
+	},
+	{
+		"label":   "TinyGo: Allocation report (nicenano)",
+		"command": "tinygo",
+		"args": [
+			"build",
+			"-target=nicenano",
+			"-print-allocs=.*",
+			"."
+		],
+		"cwd": "$ZED_WORKTREE_ROOT",
+		"env": {
+			"ZED_TINYGO_MANAGED": "1"
+		},
+		"save": "all",
+		"hide": "on_success"
+	},
+	{
+		"label":   "TinyGo: Flash and Monitor",
+		"command": "./flash.sh",
+		"cwd": "$ZED_WORKTREE_ROOT",
+		"env": {
+			"ZED_TINYGO_MANAGED": "1"
+		},
+		"save": "all",
+		"hide": "on_success"
+	},
+	{
+		"label":   "TinyGo: Monitor (nicenano)",
+		"command": "tinygo",
+		"args": [
+			"monitor",
+			"-baudrate=115200",
+			"-port=/dev/ttyACM0",
+			"."
+		],
+		"cwd": "$ZED_WORKTREE_ROOT",
+		"env": {
+			"ZED_TINYGO_MANAGED": "1"
+		},
+		"hide": "always"
+	}
+]
