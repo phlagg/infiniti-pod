@@ -56,6 +56,7 @@ func ReadCarPacket() (byte, bool) {
 
 		// 6. Simple Checksum Validation
 		calcChecksum := byte(0x100 - (int(length)+int(mode)+int(cmdH)+int(cmdL)+int(data))&0xFF)
+
 		if calcChecksum != checksum {
 			println("[CAR_ERR] Bad packet checksum match dropped. Expected:", calcChecksum, "Got:", checksum)
 			return 0, false
@@ -69,4 +70,59 @@ func ReadCarPacket() (byte, bool) {
 
 	// println("[CAR_INF] Valid iAP packet received, but not a Mode 2 button event")
 	return 0, false
+}
+
+func SendExtendedPacket(packet *[]byte, length uint16) error {
+
+	packetBuf := make([]byte, length)
+	packetBuf[0] = 0x55                       // iAP Header
+	packetBuf[1] = 0x00                       // Extended Packet Flag
+	packetBuf[2] = byte((length >> 8) & 0xFF) // Length MSB
+	packetBuf[3] = byte(length & 0xFF)        // Length LSB
+	packetBuf[4] = 0x04                       // Mode 4 (Extended / Display Remote)
+
+	for i := uint16(0); i < length; i++ {
+		packetBuf[5+i] = (*packet)[i]
+	}
+
+	packetBuf[5+length] = CalculateBufferChecksum(packetBuf, 5+length)
+
+	_, err := Serial.Write(packetBuf)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SendTrackTitlePacket(title string) error {
+
+	var length uint16 = uint16(len(title)) + 3
+	packetBuf := make([]byte, length)
+	packetBuf[0] = 0x55         // iAP Header
+	packetBuf[1] = byte(length) // Packet Length
+	packetBuf[2] = 0x04         // Mode 4 (Extended / Display Remote)
+	packetBuf[3] = 0x00         // Command MSB
+	packetBuf[4] = 0x1A         // Command LSB: Set Title String
+
+	for i := 0; i < len(title); i++ {
+		packetBuf[5+i] = title[i]
+	}
+
+	packetBuf[5+len(title)] = CalculateBufferChecksum(packetBuf, length)
+
+	_, err := Serial.Write(packetBuf)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func CalculateBufferChecksum(buffer []byte, length uint16) byte {
+	var byteSum byte
+	for i := uint16(1); i < length; i++ {
+		byteSum += (buffer)[i]
+	}
+	return -byteSum
 }
