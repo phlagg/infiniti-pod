@@ -1,7 +1,6 @@
 package ble
 
 import (
-	"context"
 	"errors"
 	"time"
 
@@ -23,7 +22,7 @@ type BLEEvent struct {
 var connectionEventChan = make(chan BLEEvent, 2)
 
 // InitRemote configures the BLE stack, registers HID characteristics, and tracks connection states
-func InitRemote(cancel context.CancelFunc) error {
+func InitRemote(disconnect func()) error {
 	if adapter == nil {
 		return errors.New("missing bluetooth hardware radio")
 	}
@@ -117,7 +116,7 @@ func InitRemote(cancel context.CancelFunc) error {
 		}
 
 		if !connected {
-			cancel()
+			disconnect()
 		}
 	})
 

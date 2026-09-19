@@ -1,49 +1,49 @@
 package main
 
 import (
-	"context"
+	"sync/atomic"
 	"time"
 
 	"github.com/phlagg/infiniti-pod/ble"
-	"github.com/phlagg/infiniti-pod/car"
+	"github.com/phlagg/infiniti-pod/iap"
 	"github.com/phlagg/infiniti-pod/usb"
 )
+
+var bleDisconnected uint32
 
 func main() {
 	logInfo("Initializing Infiniti-Pod Protocol Systems...")
 
-	// 1. Initialize Car Serial Bus Channel
-	err := car.InitializeSerialBus()
-	must("open vehicle serial UART link", err)
+	// 1. Initialize Car Bus Channel
+	err := iap.Init()
+	must("open vehicle iAP interface", err)
 
 	// 2. Initialize USB System
 	err = usb.InitAudioStream()
 	must("initialize USB audio framework", err)
 
 	// 3. Bluetooth configuration
-	ctx, cancel := context.WithCancel(context.Background())
-	err = ble.InitRemote(cancel)
+	err = ble.InitRemote(func() {
+		atomic.StoreUint32(&bleDisconnected, 1)
+	})
+
 	must("enable BLE stack infrastructure", err)
 	err = ble.StartBeacon()
 	must("activate advertising beacons", err)
 
 	logInfo("Bridge listening for car controls...")
 
-	// Real-time loop
 	for {
-		select {
-		case <-ctx.Done():
+		if atomic.LoadUint32(&bleDisconnected) == 1 {
 			logInfo("Connection sequence terminated.")
-			return
-		default:
-			// Process incoming car controls over iAP
-			if buttonCode, found := car.ReadCarPacket(); found {
-				handleCarSignals(buttonCode)
-			}
-
-			// Sleep minimally (1ms) to keep execution fast and real-time
-			time.Sleep(time.Millisecond * 1)
+			continue
 		}
+
+		iap.ReadLoop()
+
+		// Sleep minimally
+		time.Sleep(time.Millisecond * 1)
+
 	}
 }
 

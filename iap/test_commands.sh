@@ -44,27 +44,37 @@ send_test() {
     sleep 1.5
 }
 
+
+
+send_test "Handshake1" \
+          "FF FF 55 03 00 01 04 F8" \
+          "0x01" \
+          "Starts Handshake"
+send_test "Handshake2" \
+          "FF 55 03 04 00 12 E7" \
+          "0x01" \
+          "Starts Handshake2"
 # 1. Next Track
 send_test "Next Track" \
-          "55AA0302000001FA" \
+          "FF55AA0302000001FA" \
           "0x01" \
           "Triggers ble.KeyNext"
 
 # 2. Previous Track
 send_test "Previous Track" \
-          "55AA0302000008F3" \
+          "FF55AA0302000008F3" \
           "0x08" \
           "Triggers ble.KeyPrevious"
 
 # 3. Play / Pause
 send_test "Play / Pause" \
-          "55AA0302000002F9" \
+          "FF55AA0302000002F9" \
           "0x02" \
           "Triggers ble.KeyPlayPause"
 
 # 4. Release Button
 send_test "Release Button" \
-          "55AA0302000000FB" \
+          "FF55AA0302000000FB" \
           "0x00" \
           "Safely Ignored"
 

@@ -42,15 +42,14 @@
 			"ZED_TINYGO_MANAGED": "1"
 		},
 		"save": "all",
-		"hide": "on_success"
 	},
 	{
 		"label":   "TinyGo: Allocation report (nicenano)",
 		"command": "tinygo",
 		"args": [
 			"build",
+			"-print-allocs=.",
 			"-target=nicenano",
-			"-print-allocs=.*",
 			"."
 		],
 		"cwd": "$ZED_WORKTREE_ROOT",
