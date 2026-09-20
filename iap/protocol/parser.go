@@ -20,9 +20,9 @@ const (
 var readState RecieveState = AwaitSync
 
 var dataBuf = make([]byte, MaxPayloadSize)
-var idx = 0
+var idx uint8 = 0
 var dataLen = 0
-var payloadLength = 0
+var payloadLength uint8 = 0
 var sum = 0
 
 // ReadCarPacket scans the incoming UART buffer look for valid iAP protocol patterns
@@ -38,26 +38,26 @@ func ReadPacket() (*Packet, bool) {
 		if b != SyncByte {
 			return nil, false
 		}
-		// println("[SERIAL] Found Sync Byte")
+		// println("[PARSER] Found Sync Byte")
 		readState = AwaitStart
 		break
 
 	case AwaitStart:
 		if b == SyncByte {
-			// println("[SERIAL] Found Second Sync Byte")
+			// println("[PARSER] Found Second Sync Byte")
 			b, _ = transport.ReadByte()
 		}
 		if b != PacketStartByte {
 			return nil, false
 		}
-		// println("[SERIAL] Found Packet Start Byte")
+		// println("[PARSER] Found Packet Start Byte")
 		readState = AwaitLength
 		break
 
 	case AwaitLength:
-		payloadLength = int(b)
-		sum += payloadLength
-		// println("[SERIAL] Found Payload Length:", payloadLength)
+		payloadLength = uint8(b)
+		sum += int(payloadLength)
+		// println("[PARSER] Found Payload Length:", payloadLength)
 		readState = AwaitData
 		break
 
@@ -66,19 +66,20 @@ func ReadPacket() (*Packet, bool) {
 		idx++
 		sum += int(b)
 		if idx == payloadLength {
+			// println("[PARSER] Found Payload")
 			readState = AwaitChecksum
 		}
 		break
 
 	case AwaitChecksum:
+		// println("[PARSER] Found Checksum:", b)
 		calcChecksum := byte(0x100 - (sum)&0xFF)
+		println("[UART_RAW]", hex.EncodeToString(dataBuf[:payloadLength]))
 		if b != calcChecksum {
 			println("[CAR_ERR] Bad packet checksum match dropped. Calculated:", calcChecksum, "Got:", b)
 			resetState()
 			break
 		}
-		// println("[SERIAL] Found Checksum:", b)
-		println("[UART_RAW]", hex.EncodeToString(dataBuf[:payloadLength]))
 
 		payloadCopy := make([]byte, payloadLength-1)
 		copy(payloadCopy, dataBuf[1:payloadLength])
@@ -95,7 +96,7 @@ func ReadPacket() (*Packet, bool) {
 }
 
 func resetState() {
-	// println("[SERIAL] Resetting")
+	// println("[PARSER] Resetting")
 	clear(dataBuf)
 	idx = 0
 	sum = 0

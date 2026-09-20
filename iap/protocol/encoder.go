@@ -1,5 +1,7 @@
 package protocol
 
+import "encoding/hex"
+
 func BuildSmallPacket(lingo byte, cmd byte, cmdData []byte) []byte {
 	pktPayloadLen := 2 + len(cmdData) // cmd + lingo+ cmdDataLength
 	buffLen := 2 + pktPayloadLen + 1  // PacketStartByte + pktPayloadLen byte + []pktPayload + Checksum
@@ -11,7 +13,7 @@ func BuildSmallPacket(lingo byte, cmd byte, cmdData []byte) []byte {
 	for i := 0; i < len(cmdData); i++ {
 		packetBuf[4+i] = cmdData[i]
 	}
-	packetBuf[pktPayloadLen] = CalculateBufferChecksum(packetBuf)
+	packetBuf[buffLen-1] = CalculateBufferChecksum(packetBuf[1:])
 	return packetBuf
 }
 
@@ -27,6 +29,19 @@ func BuildSmallExtendedPacket(cmd uint16, cmdData []byte) []byte {
 	for i := 0; i < len(cmdData); i++ {
 		packetBuf[5+i] = cmdData[i]
 	}
-	packetBuf[len(cmdData)+5] = CalculateBufferChecksum(packetBuf)
+	packetBuf[buffLen-1] = CalculateBufferChecksum(packetBuf[1:])
+	logPacket(&packetBuf)
 	return packetBuf
+}
+
+func logPacket(packet *[]byte) {
+	println("[ENCODER]", hex.EncodeToString(*packet))
+}
+
+func CalculateBufferChecksum(buffer []byte) byte {
+	var byteSum byte
+	for i := 0; i < len(buffer); i++ {
+		byteSum += (buffer)[i]
+	}
+	return -byteSum
 }

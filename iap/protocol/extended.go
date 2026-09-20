@@ -141,7 +141,30 @@ const (
 
 )
 
-func handleSendACK(cmdIDAckd uint16, cmdResultStatus byte) error {
+func HandleExtended(payload []byte) {
+	var err error = nil
+	var commandID uint16 = (uint16(payload[0]) << 8) | uint16(payload[1])
+	switch commandID {
+
+	case ExtIfaceRequestProtocolVersion:
+		err = handleRequestProtocolVersion()
+		break
+	case ExtIfaceRequestiPodName:
+		err = handleRequestiPodName()
+		break
+	case ExtIfaceGetPlayStatus:
+		err = handleGetPlayStatus()
+		break
+	default:
+		err = ErrInvalidCmd
+
+	}
+	if err != nil {
+		println(err)
+	}
+}
+
+func SendExtendedACK(cmdIDAckd uint16, cmdResultStatus byte) error {
 	err := buildAndSendExtendedPacket(ExtIfaceACK, []byte{cmdResultStatus, byte(cmdIDAckd >> 8), byte(cmdIDAckd & 0xFF)})
 	if err != nil {
 		return err

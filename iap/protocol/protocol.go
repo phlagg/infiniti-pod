@@ -12,14 +12,13 @@ const (
 )
 
 type Packet struct {
-	LingoID   byte
-	CommandID byte
-	Payload   []byte
+	LingoID byte
+	Payload []byte
 }
 
 func Dispatch(pkt *Packet) {
 	switch pkt.LingoID {
-	case GeneralID:
+	case GeneralLingoID:
 		HandleGeneral(pkt.Payload)
 	case ExtendedInterfaceID:
 		HandleExtended(pkt.Payload)

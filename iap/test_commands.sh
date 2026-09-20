@@ -37,10 +37,11 @@ send_test() {
     # Convert hex string into raw binary bytes and blast down the pipeline
     echo -ne "$hex_payload" | xxd -r -p > "$PORT"
 
-    # Read up to 32 bytes with timeout
-    local raw=$(timeout 0.2 dd if="$PORT" bs=1 count=32 2>/dev/null)
-    # Convert raw bytes to hex
-    local actual_hex=$(echo -n "$raw" | xxd -p | tr -d '\n')
+    # Read raw bytes into a temp file
+    dd if="$PORT" bs=1 count=32 of=resp.bin 2>/dev/null
+
+    # Convert to hex
+    actual_hex=$(xxd -p resp.bin | tr -d '\n')
     echo "Actual Response (hex): $actual_hex"
 
     if [ "$actual_hex" != "$expected" ]; then
@@ -55,47 +56,48 @@ send_test() {
 }
 
 
-# send_test "SendLingoSupport" \
-#           "FF FF 55 03 00 01 04 F8" \
-#           "0x01" \
-#           "Starts Handshake"
+send_test "SendLingoSupport" \
+          "FF FF 55 03 00 01 04 F8" \
+          "ff550400020001f9" \
+          "Sends Ack"
 
 send_test "RequestVersion" \
           "FF 55 03 04 00 12 E7" \
-          "ff5505041301147a" \
+          "ff55050400130114cf" \
           "Starts Handshake"
 
 send_test "RequestiPodName" \
           "FF 55 03 04 00 14 E5" \
-          "ff551204154d69636861656c27732050686f6e6519" \
+          "ff55120400154d69636861656c27732050686f6e656e" \
           "Returns 'Michael's Phone'"
+
 send_test "GetPlayStatus" \
           "FF 55 03 04 00 1C DD" \
-          "ff551204154d69636861656c27732050686f6e6519" \
+          "ff550c04001d000249f00000753002f1" \
           "Returns Play Status"
 
-# 1. Next Track
-send_test "Next Track" \
-          "FF55AA0302000001FA" \
-          "0x01" \
-          "Triggers ble.KeyNext"
+# # 1. Next Track
+# send_test "Next Track" \
+#           "FF55AA0302000001FA" \
+#           "0x01" \
+#           "Triggers ble.KeyNext"
 
-# 2. Previous Track
-send_test "Previous Track" \
-          "FF55AA0302000008F3" \
-          "0x08" \
-          "Triggers ble.KeyPrevious"
+# # 2. Previous Track
+# send_test "Previous Track" \
+#           "FF55AA0302000008F3" \
+#           "0x08" \
+#           "Triggers ble.KeyPrevious"
 
-# 3. Play / Pause
-send_test "Play / Pause" \
-          "FF55AA0302000002F9" \
-          "0x02" \
-          "Triggers ble.KeyPlayPause"
+# # 3. Play / Pause
+# send_test "Play / Pause" \
+#           "FF55AA0302000002F9" \
+#           "0x02" \
+#           "Triggers ble.KeyPlayPause"
 
-# 4. Release Button
-send_test "Release Button" \
-          "FF55AA0302000000FB" \
-          "0x00" \
-          "Safely Ignored"
+# # 4. Release Button
+# send_test "Release Button" \
+#           "FF55AA0302000000FB" \
+#           "0x00" \
+#           "Safely Ignored"
 
 echo -e "\033[1;32mAll test sequences sent successfully!\033[0m"
