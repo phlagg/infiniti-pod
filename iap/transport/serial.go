@@ -6,6 +6,8 @@ import "machine"
 var UART = machine.UART0
 var initialized = false
 
+type Serial *machine.UART
+
 // Initialize sets up the physical 19200 8N1 car line connection
 // Standard legacy Apple iAP accessory baud rate
 func Initialize() {

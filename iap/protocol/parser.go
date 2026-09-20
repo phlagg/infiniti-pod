@@ -80,13 +80,12 @@ func ReadPacket() (*Packet, bool) {
 		// println("[SERIAL] Found Checksum:", b)
 		println("[UART_RAW]", hex.EncodeToString(dataBuf[:payloadLength]))
 
-		payloadCopy := make([]byte, payloadLength-2)
-		copy(payloadCopy, dataBuf[2:payloadLength])
+		payloadCopy := make([]byte, payloadLength-1)
+		copy(payloadCopy, dataBuf[1:payloadLength])
 
 		pkt := Packet{
-			LingoID:   dataBuf[0],
-			CommandID: dataBuf[1],
-			Payload:   payloadCopy,
+			LingoID: dataBuf[0],
+			Payload: payloadCopy,
 		}
 		resetState()
 		return &pkt, true

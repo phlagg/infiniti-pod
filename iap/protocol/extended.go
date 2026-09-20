@@ -1,5 +1,7 @@
 package protocol
 
+import "github.com/phlagg/infiniti-pod/iap/playback"
+
 // Implementing iAP Extended Interface Mode from pg 342 of specification
 const (
 	ExtendedPacketFlag = 0x00
@@ -43,7 +45,7 @@ const (
 
 const (
 	ExtIfaceReserved0000                          = 0x0000 // Reserved
-	ExtIfaceAC                                    = 0x0001 // AC
+	ExtIfaceACK                                   = 0x0001 // ACK
 	ExtIfaceGetCurrentPlayingChapterInfo          = 0x0002
 	ExtIfaceReturnCurrentPlayingChapterInfo       = 0x0003
 	ExtIfaceSetCurrentPlayingChapter              = 0x0004
@@ -139,18 +141,47 @@ const (
 
 )
 
-func handleAC(payload []byte) error {
-	if len(payload) < 1 {
-		return ErrPacketTooShort
+func handleSendACK(cmdIDAckd uint16, cmdResultStatus byte) error {
+	err := buildAndSendExtendedPacket(ExtIfaceACK, []byte{cmdResultStatus, byte(cmdIDAckd >> 8), byte(cmdIDAckd & 0xFF)})
+	if err != nil {
+		return err
 	}
-	_ = payload
+	return nil
+}
+
+func buildAndSendExtendedPacket(cmd uint16, cmdData []byte) error {
+	packet := BuildSmallExtendedPacket(cmd, cmdData)
+	err := SendPacket(packet)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 // pg 528
 func handleRequestProtocolVersion() error {
+	packet := BuildSmallExtendedPacket(ExtIfaceReturnProtocolVersion, []byte{MajorVersionNumber, MinorVersionNumber})
+	err := SendPacket(packet)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
-	packet := BuildExtendedPacket(ExtIfaceReturnProtocolVersion, []byte{MajorVersionNumber, MinorVersionNumber})
+func handleRequestiPodName() error {
+	iPodName := "Michael's Phone"
+	packet := BuildSmallExtendedPacket(ExtIfaceReturniPodName, []byte(iPodName))
+	err := SendPacket(packet)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func handleGetPlayStatus() error {
+
+	playStatus := playback.GetPlayStatus()
+
+	packet := BuildSmallExtendedPacket(ExtIfaceReturnPlayStatus, playStatus)
 	err := SendPacket(packet)
 	if err != nil {
 		return err

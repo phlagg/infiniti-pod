@@ -37,7 +37,17 @@ send_test() {
     # Convert hex string into raw binary bytes and blast down the pipeline
     echo -ne "$hex_payload" | xxd -r -p > "$PORT"
 
-    echo -e "\033[0;32m  [✔] Bytes injected successfully.\033[0m"
+    # Read up to 32 bytes with timeout
+    local raw=$(timeout 0.2 dd if="$PORT" bs=1 count=32 2>/dev/null)
+    # Convert raw bytes to hex
+    local actual_hex=$(echo -n "$raw" | xxd -p | tr -d '\n')
+    echo "Actual Response (hex): $actual_hex"
+
+    if [ "$actual_hex" != "$expected" ]; then
+        echo -e "\033[0;31m  [✘] Expected '$expected', got '$actual_hex'.\033[0m"
+    else
+        echo -e "\033[0;32m  [✔] Expected '$expected', got '$actual_hex'.\033[0m"
+    fi
     echo "---------------------------------------------"
 
     # Give the MCU time to process the transmission before the next payload drops
@@ -45,15 +55,25 @@ send_test() {
 }
 
 
+# send_test "SendLingoSupport" \
+#           "FF FF 55 03 00 01 04 F8" \
+#           "0x01" \
+#           "Starts Handshake"
 
-send_test "Handshake1" \
-          "FF FF 55 03 00 01 04 F8" \
-          "0x01" \
-          "Starts Handshake"
-send_test "Handshake2" \
+send_test "RequestVersion" \
           "FF 55 03 04 00 12 E7" \
-          "0x01" \
-          "Starts Handshake2"
+          "ff5505041301147a" \
+          "Starts Handshake"
+
+send_test "RequestiPodName" \
+          "FF 55 03 04 00 14 E5" \
+          "ff551204154d69636861656c27732050686f6e6519" \
+          "Returns 'Michael's Phone'"
+send_test "GetPlayStatus" \
+          "FF 55 03 04 00 1C DD" \
+          "ff551204154d69636861656c27732050686f6e6519" \
+          "Returns Play Status"
+
 # 1. Next Track
 send_test "Next Track" \
           "FF55AA0302000001FA" \

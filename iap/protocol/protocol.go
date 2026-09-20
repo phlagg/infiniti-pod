@@ -1,8 +1,8 @@
 package protocol
 
 const (
-	MajorVersionNumber = 1
-	MinorVersionNumber = 0
+	MajorVersionNumber = 0x01
+	MinorVersionNumber = 0x14
 )
 const MaxPayloadSize = 255
 
@@ -20,8 +20,8 @@ type Packet struct {
 func Dispatch(pkt *Packet) {
 	switch pkt.LingoID {
 	case GeneralID:
-		HandleGeneral(pkt.CommandID, pkt.Payload)
+		HandleGeneral(pkt.Payload)
 	case ExtendedInterfaceID:
-		HandleExtended(pkt.CommandID, pkt.Payload)
+		HandleExtended(pkt.Payload)
 	}
 }

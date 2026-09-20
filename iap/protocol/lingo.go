@@ -115,7 +115,7 @@ const (
 
 // pg. 523
 func handleIdentifyRequest(payload []byte) error {
-	packet := BuildPacket(0x00, 0x00, payload)
+	packet := BuildSmallPacket(0x00, 0x00, payload)
 	err := SendPacket(packet)
 	if err != nil {
 		return err
@@ -123,17 +123,15 @@ func handleIdentifyRequest(payload []byte) error {
 	return nil
 }
 
-func HandleGeneral(commandID byte, payload []byte) {
-	println("0x00", commandID, len(payload), payload[0])
-}
-
-func HandleExtended(commandID byte, payload []byte) {
+func HandleGeneral(payload []byte) {
 	var err error = nil
-	println("0x04", commandID, len(payload), payload[0])
+	commandID := payload[0]
+	println("0x00", commandID, len(payload), payload[0])
 	switch commandID {
 
-	case ExtIfaceRequestProtocolVersion:
-		err = handleRequestProtocolVersion()
+	case byte(GeneralIdentify):
+		println("0x00", commandID)
+		err = handleIdentifyRequest(payload[1:])
 		break
 
 	default:
@@ -144,4 +142,30 @@ func HandleExtended(commandID byte, payload []byte) {
 		println(err)
 	}
 
+}
+
+func HandleExtended(payload []byte) {
+	var err error = nil
+	var commandID uint16 = (uint16(payload[0]) << 8) | uint16(payload[1])
+	switch commandID {
+
+	case ExtIfaceRequestProtocolVersion:
+		println("0x04", commandID)
+		err = handleRequestProtocolVersion()
+		break
+	case ExtIfaceRequestiPodName:
+		println("0x04", commandID)
+		err = handleRequestiPodName()
+		break
+	case ExtIfaceGetPlayStatus:
+		println("0x04", commandID)
+		err = handleGetPlayStatus()
+		break
+	default:
+		err = ErrInvalidCmd
+
+	}
+	if err != nil {
+		println(err)
+	}
 }
