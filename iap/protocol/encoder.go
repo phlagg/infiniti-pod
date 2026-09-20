@@ -30,7 +30,7 @@ func BuildSmallExtendedPacket(cmd uint16, cmdData []byte) []byte {
 		packetBuf[5+i] = cmdData[i]
 	}
 	packetBuf[buffLen-1] = CalculateBufferChecksum(packetBuf[1:])
-	logPacket(&packetBuf)
+	// logPacket(&packetBuf)
 	return packetBuf
 }
 

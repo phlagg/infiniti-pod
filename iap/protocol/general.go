@@ -108,15 +108,12 @@ func HandleGeneral(payload []byte) {
 	switch cmdID {
 
 	case GeneralIdentify:
-		println("0x00", cmdID, len(cmdData), cmdData[0])
 		err = handleGeneralIdentify()
 		break
 
 	default:
 		err = ErrInvalidCmd
-
-	}
-	if err != nil {
+		print(cmdData)
 		println(err)
 	}
 

@@ -155,6 +155,8 @@ func HandleExtended(payload []byte) {
 	case ExtIfaceGetPlayStatus:
 		err = handleGetPlayStatus()
 		break
+	case ExtIfaceSetPlayStatusChangeNotification:
+		err = handleSetPlayStatusChangeNotification()
 	default:
 		err = ErrInvalidCmd
 
@@ -206,6 +208,15 @@ func handleGetPlayStatus() error {
 
 	packet := BuildSmallExtendedPacket(ExtIfaceReturnPlayStatus, playStatus)
 	err := SendPacket(packet)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func handleSetPlayStatusChangeNotification() error {
+
+	err := buildAndSendExtendedPacket(ExtIfaceSetPlayStatusChangeNotification, []byte{0x01})
 	if err != nil {
 		return err
 	}
