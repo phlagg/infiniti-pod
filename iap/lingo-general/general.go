@@ -1,4 +1,6 @@
-package protocol
+package general
+
+import "github.com/phlagg/infiniti-pod/iap"
 
 const (
 	GeneralRequestIdentify     = 0x00
@@ -94,51 +96,22 @@ const (
 	// 0x16–0xFF reserved
 )
 
-func HandleGeneral(payload []byte) {
-	var err error = nil
-
-	cmdID := payload[0]
-	var cmdData []byte
-	if len(payload) > 1 {
-		cmdData = payload[1:]
-	} else {
-		cmdData = []byte{}
-	}
-
-	switch cmdID {
-
-	case GeneralIdentify:
-		err = handleGeneralIdentify()
-		break
-
-	default:
-		err = ErrInvalidCmd
-		print(cmdData)
-		println(err)
-	}
-
+func SendACK(lingo byte, cmdIDAckd byte, cmdResultStatus byte) error {
+	return buildAndSendSmallPacket(lingo, GeneralACK, []byte{cmdResultStatus, cmdIDAckd})
 }
 
-func SendACK(lingo byte, cmdIDAckd byte, cmdResultStatus byte) error {
-	err := buildAndSendSmallPacket(lingo, GeneralACK, []byte{cmdResultStatus, cmdIDAckd})
-	if err != nil {
-		return err
-	}
-	return nil
+func handleGetAccessoryInfo(infoType byte) error {
+	return buildAndSendSmallPacket(iap.LingoGeneralID, GeneralGetAccessoryInfo, []byte{0x00})
 }
 
 // pg. 523
 func handleGeneralIdentify() error {
-	err := SendACK(GeneralLingoID, GeneralIdentify, AckOK)
-	if err != nil {
-		return err
-	}
-	return nil
+	return SendACK(iap.LingoGeneralID, GeneralIdentify, AckOK)
 }
 
 func buildAndSendSmallPacket(lingo byte, cmd byte, cmdData []byte) error {
-	packet := BuildSmallPacket(lingo, cmd, cmdData)
-	err := SendPacket(packet)
+	packet := iap.BuildSmallPacket(lingo, cmd, cmdData)
+	err := iap.SendPacket(packet)
 	if err != nil {
 		return err
 	}

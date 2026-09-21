@@ -1,22 +1,17 @@
 package iap
 
-import (
-	"github.com/phlagg/infiniti-pod/iap/protocol"
-	"github.com/phlagg/infiniti-pod/iap/transport"
+const (
+	MajorVersionNumber = 0x01
+	MinorVersionNumber = 0x14
 )
 
-var pkt *protocol.Packet
+type iAPError string
 
-func Init() error {
-	transport.Initialize()
-	return nil
-}
+func (e iAPError) Error() string { return string(e) }
 
-func ReadLoop() {
-	pkt, ok := protocol.ReadPacket()
-	if !ok {
-		return
-	}
-
-	protocol.Dispatch(pkt)
-}
+const (
+	ErrPacketTooShort iAPError = "packet too short"
+	ErrBadChecksum    iAPError = "bad checksum"
+	ErrInvalidStart   iAPError = "invalid start byte"
+	ErrInvalidCmd     iAPError = "invalid command"
+)

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/phlagg/infiniti-pod/ble"
-	"github.com/phlagg/infiniti-pod/iap"
+	"github.com/phlagg/infiniti-pod/ipod"
 	"github.com/phlagg/infiniti-pod/usb"
 )
 
@@ -15,7 +15,7 @@ func main() {
 	logInfo("Initializing Infiniti-Pod Protocol Systems...")
 
 	// 1. Initialize Car Bus Channel
-	err := iap.Init()
+	err := ipod.Init()
 	must("open vehicle iAP interface", err)
 
 	// 2. Initialize USB System
@@ -39,7 +39,7 @@ func main() {
 			continue
 		}
 
-		iap.ReadLoop()
+		ipod.Run()
 
 		// Sleep minimally
 		time.Sleep(time.Millisecond * 1)

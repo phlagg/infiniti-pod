@@ -1,5 +1,7 @@
 package playback
 
+import "errors"
+
 const (
 	PlayerStateStopped byte = 0x00
 	PlayerStatePlaying byte = 0x01
@@ -13,6 +15,18 @@ func GetPlayStatus() []byte {
 	var playerState byte = PlayerStatePaused
 	logStatus("GetPlayStatus", "trackTimeMs", trackTimeMs, "trackPositionMs", trackPositionMs, "playerState", playerState)
 	return buildPlayStatus(trackTimeMs, trackPositionMs, playerState)
+}
+
+func SetPlayStatusChangeNotification(cmd byte) error {
+	switch cmd {
+	case 0x00:
+		println("Disabled all status event notifications")
+	case 0x01:
+		println("Enabled play status event notifications")
+	default:
+		return errors.New("[Playback Engine] invalid status cmd")
+	}
+	return nil
 }
 
 func buildPlayStatus(trackTimeMs, trackPositionMs uint32, playerState byte) []byte {

@@ -1,6 +1,9 @@
-package protocol
+package extended
 
-import "github.com/phlagg/infiniti-pod/iap/playback"
+import (
+	"github.com/phlagg/infiniti-pod/iap"
+	"github.com/phlagg/infiniti-pod/ipod/playback"
+)
 
 // Implementing iAP Extended Interface Mode from pg 342 of specification
 const (
@@ -141,86 +144,35 @@ const (
 
 )
 
-func HandleExtended(payload []byte) {
-	var err error = nil
-	var commandID uint16 = (uint16(payload[0]) << 8) | uint16(payload[1])
-	switch commandID {
-
-	case ExtIfaceRequestProtocolVersion:
-		err = handleRequestProtocolVersion()
-		break
-	case ExtIfaceRequestiPodName:
-		err = handleRequestiPodName()
-		break
-	case ExtIfaceGetPlayStatus:
-		err = handleGetPlayStatus()
-		break
-	case ExtIfaceSetPlayStatusChangeNotification:
-		err = handleSetPlayStatusChangeNotification()
-	default:
-		err = ErrInvalidCmd
-
-	}
+func buildAndSendExtendedPacket(cmd uint16, cmdData []byte) error {
+	packet := iap.BuildSmallExtendedPacket(cmd, cmdData)
+	err := iap.SendPacket(packet)
 	if err != nil {
-		println(err)
+		return err
 	}
+	return nil
 }
 
 func SendExtendedACK(cmdIDAckd uint16, cmdResultStatus byte) error {
-	err := buildAndSendExtendedPacket(ExtIfaceACK, []byte{cmdResultStatus, byte(cmdIDAckd >> 8), byte(cmdIDAckd & 0xFF)})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func buildAndSendExtendedPacket(cmd uint16, cmdData []byte) error {
-	packet := BuildSmallExtendedPacket(cmd, cmdData)
-	err := SendPacket(packet)
-	if err != nil {
-		return err
-	}
-	return nil
+	return buildAndSendExtendedPacket(ExtIfaceACK, []byte{cmdResultStatus, byte(cmdIDAckd >> 8), byte(cmdIDAckd & 0xFF)})
 }
 
 // pg 528
 func handleRequestProtocolVersion() error {
-	packet := BuildSmallExtendedPacket(ExtIfaceReturnProtocolVersion, []byte{MajorVersionNumber, MinorVersionNumber})
-	err := SendPacket(packet)
-	if err != nil {
-		return err
-	}
-	return nil
+	return buildAndSendExtendedPacket(ExtIfaceReturnProtocolVersion, []byte{iap.MajorVersionNumber, iap.MinorVersionNumber})
 }
 
 func handleRequestiPodName() error {
 	iPodName := "Michael's Phone"
-	packet := BuildSmallExtendedPacket(ExtIfaceReturniPodName, []byte(iPodName))
-	err := SendPacket(packet)
-	if err != nil {
-		return err
-	}
-	return nil
+	return buildAndSendExtendedPacket(ExtIfaceReturniPodName, []byte(iPodName))
 }
 func handleGetPlayStatus() error {
-
 	playStatus := playback.GetPlayStatus()
-
-	packet := BuildSmallExtendedPacket(ExtIfaceReturnPlayStatus, playStatus)
-	err := SendPacket(packet)
-	if err != nil {
-		return err
-	}
-	return nil
+	return buildAndSendExtendedPacket(ExtIfaceReturnPlayStatus, playStatus)
 }
 
 func handleSetPlayStatusChangeNotification() error {
-
-	err := buildAndSendExtendedPacket(ExtIfaceSetPlayStatusChangeNotification, []byte{0x01})
-	if err != nil {
-		return err
-	}
-	return nil
+	return buildAndSendExtendedPacket(ExtIfacePlayStatusChangeNotification, []byte{0x00})
 }
 
 func handleGetChapterInfo() error {
