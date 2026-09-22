@@ -1,6 +1,4 @@
-package general
-
-import "github.com/phlagg/infiniti-pod/iap"
+package lingo
 
 const (
 	GeneralRequestIdentify     = 0x00
@@ -96,24 +94,15 @@ const (
 	// 0x16–0xFF reserved
 )
 
-func SendACK(lingo byte, cmdIDAckd byte, cmdResultStatus byte) error {
-	return buildAndSendSmallPacket(lingo, GeneralACK, []byte{cmdResultStatus, cmdIDAckd})
-}
+// func handleGeneralACK(lingo byte, cmdIDAckd byte, cmdResultStatus byte) (uint8, []byte, error) {
+// 	return GeneralACK, []byte{cmdResultStatus, cmdIDAckd}, nil
+// }
 
-func handleGetAccessoryInfo(infoType byte) error {
-	return buildAndSendSmallPacket(iap.LingoGeneralID, GeneralGetAccessoryInfo, []byte{0x00})
-}
+// func handleGetAccessoryInfo(infoType byte) (uint8, []byte, error) {
+// 	return GeneralGetAccessoryInfo, []byte{0x00}, nil
+// }
 
-// pg. 523
-func handleGeneralIdentify() error {
-	return SendACK(iap.LingoGeneralID, GeneralIdentify, AckOK)
-}
-
-func buildAndSendSmallPacket(lingo byte, cmd byte, cmdData []byte) error {
-	packet := iap.BuildSmallPacket(lingo, cmd, cmdData)
-	err := iap.SendPacket(packet)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// // pg. 523
+// func handleGeneralIdentify() (uint8, []byte, error) {
+// 	return handleGeneralACK(lingo.LingoGeneralID, GeneralIdentify, AckOK)
+// }

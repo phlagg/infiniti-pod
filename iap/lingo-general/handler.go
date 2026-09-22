@@ -1,7 +1,5 @@
 package general
 
-import "github.com/phlagg/infiniti-pod/iap"
-
 type DeviceGeneral interface {
 	// UIMode() UIMode
 	// SetUIMode(UIMode)
@@ -27,29 +25,4 @@ type DeviceGeneral interface {
 	CancelCommand(lingo uint8, cmd uint16, transaction uint16)
 
 	MaxPayload() uint16
-}
-
-func HandleGeneral(payload []byte) {
-	var err error = nil
-
-	cmdID := payload[0]
-	var cmdData []byte
-	if len(payload) > 1 {
-		cmdData = payload[1:]
-	} else {
-		cmdData = []byte{}
-	}
-
-	switch cmdID {
-
-	case GeneralIdentify:
-		err = handleGeneralIdentify()
-		break
-
-	default:
-		err = iap.ErrInvalidCmd
-		print(cmdData)
-		println(err)
-	}
-
 }

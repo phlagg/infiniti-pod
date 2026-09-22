@@ -4,7 +4,7 @@ go 1.25.7
 
 require tinygo.org/x/bluetooth v0.15.0
 
-replace tinygo.org/x/bluetooth v0.15.0 => ./bluetooth
+replace tinygo.org/x/bluetooth v0.15.0 => ./external/bluetooth
 
 // require tinygo.org/x/bluetooth v0.15.1-0.20260718202227-c41f4c429633
 

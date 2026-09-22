@@ -3,13 +3,13 @@ package iap
 import (
 	"testing"
 
-	"github.com/phlagg/infiniti-pod/iap/transport"
+	"github.com/phlagg/infiniti-pod/transport/serial"
 )
 
 var fakeBuf []byte
 var fakeIdx int
 
-// fake transport
+// fake serial
 func fakeBuffered() int {
 	return len(fakeBuf) - fakeIdx
 }
@@ -20,8 +20,8 @@ func fakeReadByte() (byte, error) {
 	return b, nil
 }
 func init() {
-	transport.Buffered = fakeBuffered
-	transport.ReadByte = fakeReadByte
+	serial.Buffered = fakeBuffered
+	serial.ReadByte = fakeReadByte
 }
 
 func TestReadPacket_Valid(t *testing.T) {

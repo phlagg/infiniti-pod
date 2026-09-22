@@ -4,9 +4,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/phlagg/infiniti-pod/ble"
 	"github.com/phlagg/infiniti-pod/ipod"
-	"github.com/phlagg/infiniti-pod/usb"
+	"github.com/phlagg/infiniti-pod/transport/ble"
+	"github.com/phlagg/infiniti-pod/transport/serial"
+	"github.com/phlagg/infiniti-pod/transport/usb"
 )
 
 var bleDisconnected uint32
@@ -15,8 +16,8 @@ func main() {
 	logInfo("Initializing Infiniti-Pod Protocol Systems...")
 
 	// 1. Initialize Car Bus Channel
-	err := ipod.Init()
-	must("open vehicle iAP interface", err)
+	err := serial.Init()
+	must("open serial interface with vehicle", err)
 
 	// 2. Initialize USB System
 	err = usb.InitAudioStream()
@@ -44,23 +45,6 @@ func main() {
 		// Sleep minimally
 		time.Sleep(time.Millisecond * 1)
 
-	}
-}
-
-// handleCarSignals bridges the vehicle iAP commands over to Bluetooth media keys
-func handleCarSignals(code byte) {
-	switch code {
-	case 0x01:
-		println("[BRIDGE] Vehicle command: NEXT -> Notifying Phone")
-		ble.PressMediaKey(ble.KeyNext)
-	case 0x08:
-		println("[BRIDGE] Vehicle command: PREVIOUS -> Notifying Phone")
-		ble.PressMediaKey(ble.KeyPrevious)
-	case 0x02:
-		println("[BRIDGE] Vehicle command: PLAY/PAUSE -> Notifying Phone")
-		ble.PressMediaKey(ble.KeyPlayPause)
-	case 0x00:
-		// Button released event, ignore safely
 	}
 }
 

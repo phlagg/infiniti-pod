@@ -1,4 +1,4 @@
-package transport
+package serial
 
 import "machine"
 
@@ -10,9 +10,10 @@ type Serial *machine.UART
 
 // Initialize sets up the physical 19200 8N1 car line connection
 // Standard legacy Apple iAP accessory baud rate
-func Initialize() {
+func Init() error {
 	UART.Configure(machine.UARTConfig{BaudRate: 19200})
 	initialized = true
+	return nil
 }
 
 func Buffered() int {

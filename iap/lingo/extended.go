@@ -1,48 +1,4 @@
-package extended
-
-import (
-	"github.com/phlagg/infiniti-pod/iap"
-	"github.com/phlagg/infiniti-pod/ipod/playback"
-)
-
-// Implementing iAP Extended Interface Mode from pg 342 of specification
-const (
-	ExtendedPacketFlag = 0x00
-	AckStartIdps       = 0x02
-)
-
-type AccAckStatus uint8
-
-const (
-	AccAckOK                    AccAckStatus = 0x00 // Success (OK)
-	AccAckReserved01            AccAckStatus = 0x01 // Reserved
-	AccAckErrorFailed           AccAckStatus = 0x02 // ERROR: Command failed
-	AccAckErrorOutOfResources   AccAckStatus = 0x03 // ERROR: Out of resources
-	AccAckErrorBadParameter     AccAckStatus = 0x04 // ERROR: Bad parameter
-	AccAckErrorUnknownID        AccAckStatus = 0x05 // ERROR: Unknown ID
-	AccAckReserved06            AccAckStatus = 0x06 // Reserved
-	AccAckErrorNotAuthenticated AccAckStatus = 0x07 // ERROR: Accessory not authenticated
-
-	// 0x08–0xFF are reserved.
-	AccAckReservedStart AccAckStatus = 0x08
-)
-
-type AckCommand uint8
-
-const (
-	iPodAck AckCommand = 0x01
-)
-
-type RetiPodOption byte
-
-const (
-	VideoBrowsing        RetiPodOption = 0x00
-	RemoteUiEnhancements RetiPodOption = 0x01
-	NestedPlaylists      RetiPodOption = 0x02
-	Reserved             RetiPodOption = 0x03
-	SetDisplayImage      RetiPodOption = 0x04
-	ReservedRange        RetiPodOption = 0x05
-)
+package lingo
 
 // Extended Interface command summary on pg. 368 of specification
 
@@ -70,10 +26,10 @@ const (
 	ExtIfaceGetTrackArtworkData    = 0x0010
 	ExtIfaceReturnTrackArtworkData = 0x0011
 
-	ExtIfaceRequestProtocolVersion = 0x0012 // Deprecated
-	ExtIfaceReturnProtocolVersion  = 0x0013 // Deprecated
-	ExtIfaceRequestiPodName        = 0x0014 // Deprecated
-	ExtIfaceReturniPodName         = 0x0015 // Deprecated
+	ExtIfaceRequestProtocolVersion = 0x0012
+	ExtIfaceReturnProtocolVersion  = 0x0013
+	ExtIfaceRequestiPodName        = 0x0014
+	ExtIfaceReturniPodName         = 0x0015
 
 	ExtIfaceResetDBSelection                 = 0x0016
 	ExtIfaceSelectDBRecord                   = 0x0017
@@ -143,43 +99,3 @@ const (
 	ExtIfaceReserved0044 = 0x0044 // Reserved
 
 )
-
-func buildAndSendExtendedPacket(cmd uint16, cmdData []byte) error {
-	packet := iap.BuildSmallExtendedPacket(cmd, cmdData)
-	err := iap.SendPacket(packet)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func SendExtendedACK(cmdIDAckd uint16, cmdResultStatus byte) error {
-	return buildAndSendExtendedPacket(ExtIfaceACK, []byte{cmdResultStatus, byte(cmdIDAckd >> 8), byte(cmdIDAckd & 0xFF)})
-}
-
-// pg 528
-func handleRequestProtocolVersion() error {
-	return buildAndSendExtendedPacket(ExtIfaceReturnProtocolVersion, []byte{iap.MajorVersionNumber, iap.MinorVersionNumber})
-}
-
-func handleRequestiPodName() error {
-	iPodName := "Michael's Phone"
-	return buildAndSendExtendedPacket(ExtIfaceReturniPodName, []byte(iPodName))
-}
-func handleGetPlayStatus() error {
-	playStatus := playback.GetPlayStatus()
-	return buildAndSendExtendedPacket(ExtIfaceReturnPlayStatus, playStatus)
-}
-
-func handleSetPlayStatusChangeNotification() error {
-	return buildAndSendExtendedPacket(ExtIfacePlayStatusChangeNotification, []byte{0x00})
-}
-
-func handleGetChapterInfo() error {
-	// packet := protocol.BuildExtendedPacket(ExtIfaceReturnChapterInfo, nil)
-	// err := protocol.SendPacket(packet)
-	// if err != nil {
-	// 	return err
-	// }
-	return nil
-}
