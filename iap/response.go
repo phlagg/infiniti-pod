@@ -1,6 +1,10 @@
 package iap
 
-import "github.com/phlagg/infiniti-pod/iap/lingo"
+import (
+	"encoding/hex"
+
+	"github.com/phlagg/infiniti-pod/iap/lingo"
+)
 
 // Response represents a device-generated response that iap will frame and send.
 type Response struct {
@@ -12,6 +16,7 @@ type Response struct {
 func buildResponse(resp *Response) []byte {
 	switch resp.Lingo {
 	case lingo.LingoGeneralID:
+		println("response:", hex.EncodeToString(resp.CmdData))
 		return buildSmallPacket(resp)
 	case lingo.LingoExtendedID:
 		return buildSmallExtendedPacket(resp)

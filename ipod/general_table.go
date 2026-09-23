@@ -11,19 +11,21 @@ var GeneralTable = []commandEntry{
 		CmdID:  lingo.GeneralRequestIdentify,
 		RespID: lingo.GeneralIdentify,
 		Exec: func(cmd iap.Command) []byte {
-			return GeneralAck(lingo.GeneralIdentify, lingo.AckOK)
+			return []byte{}
 		}},
 	{
 		CmdID:  lingo.GeneralIdentify,
 		RespID: 0,
-		Exec:   nil,
+		Exec: func(cmd iap.Command) []byte {
+			return GeneralAck(lingo.GeneralIdentify, lingo.AckOK)
+		},
 	},
 
 	// ACK
 	{
 		CmdID:  lingo.GeneralACK,
 		RespID: 0,
-		Exec:   nil,
+		Exec:   func(cmd iap.Command) []byte { return []byte{} },
 	},
 
 	// Remote UI Mode
