@@ -13,12 +13,12 @@ const (
 	PacketStartByte byte = 0x55
 )
 
-type Packet struct {
+type RecievedPacket struct {
 	LingoID byte
 	Payload []byte
 }
 
-var pkt *Packet
+var pkt *RecievedPacket
 
 type RecieveState uint8
 
@@ -40,7 +40,7 @@ var payloadLength uint8 = 0
 var sum = 0
 
 // ReadCarPacket scans the incoming UART buffer look for valid iAP protocol patterns
-func ReadPacket() (*Packet, bool) {
+func ReadPacket() (*RecievedPacket, bool) {
 	if serial.Buffered() <= 0 {
 		return nil, false
 	}
@@ -98,7 +98,7 @@ func ReadPacket() (*Packet, bool) {
 		payloadCopy := make([]byte, payloadLength-1)
 		copy(payloadCopy, dataBuf[1:payloadLength])
 
-		pkt := Packet{
+		pkt := RecievedPacket{
 			LingoID: dataBuf[0],
 			Payload: payloadCopy,
 		}
@@ -119,7 +119,7 @@ func resetState() {
 	state = AwaitSync
 }
 
-func SendPacket(pkt []byte) error {
+func SendPacket(pkt *ResponsePacket) error {
 	if err := sendPacketSerial(pkt); err != nil {
 		return err
 	}
@@ -130,9 +130,9 @@ func SendPacket(pkt []byte) error {
 	return nil
 }
 
-func sendPacketSerial(pkt []byte) error {
+func sendPacketSerial(pkt *ResponsePacket) error {
 	// prepend sync byte
-	buf := append([]byte{0xFF}, pkt...)
+	buf := append([]byte{0xFF}, *pkt...)
 	logSentPacket(&buf)
 	_, err := serial.Write(buf)
 	return err
@@ -142,12 +142,12 @@ func logSentPacket(pkt *[]byte) {
 	println("[PACKET]", hex.EncodeToString(*pkt))
 }
 
-//	func SendPacketUSB(pkt []byte) error {
+//	func SendPacketUSB(pkt ResponsePacket) error {
 //		_, err := usb.Write(pkt)
 //		return err
 //	}
 //
 
-func logPacket(packet *[]byte) {
+func logPacket(packet *ResponsePacket) {
 	println("[PACKET]", hex.EncodeToString(*packet))
 }

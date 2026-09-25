@@ -14,18 +14,18 @@ const (
 	ErrInvalidLingoID iAPError = "invalid lingo ID"
 )
 
-func ProcessFrames(handler func(Command) Response) {
+func ProcessFrames(handler func(Command) *Command) {
 	pkt, ok := ReadPacket()
 	if !ok {
 		return
 	}
 
-	cmd := parseCommand(pkt)
+	cmd := parsePacket(pkt)
 	buf := []byte{byte(cmd.CmdID >> 8), byte(cmd.CmdID & 0xFF)}
 	println("[cmd]", hex.EncodeToString(buf))
 	println("[cmdData]", hex.EncodeToString(cmd.CmdData))
 
 	resp := handler(cmd)
 
-	SendPacket(buildResponse(&resp))
+	SendPacket(buildResponsePacket(resp))
 }

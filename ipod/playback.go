@@ -1,5 +1,11 @@
 package ipod
 
+import (
+	"github.com/phlagg/infiniti-pod/iap"
+	"github.com/phlagg/infiniti-pod/iap/lingo"
+	"github.com/phlagg/infiniti-pod/transport/ble"
+)
+
 const (
 	PlayerStateStopped byte = 0x00
 	PlayerStatePlaying byte = 0x01
@@ -16,17 +22,19 @@ func logStatus(status ...any) {
 }
 
 // General
-func GetRemoteUIMode() []byte { return nil }
-func EnterRemoteUIMode()      {}
-func ExitRemoteUIMode()       {}
+func GetRemoteUIMode() *iap.Command { return nil }
+func EnterRemoteUIMode()            {}
+func ExitRemoteUIMode()             {}
 
 // Extended
-func GetPlayStatus() []byte {
+func GetPlayStatus() *iap.Command {
 	var trackTimeMs uint32 = 150_000
 	var trackPositionMs uint32 = 30_000
 	var playerState byte = PlayerStatePaused
 	logStatus("GetPlayStatus", "trackTimeMs", trackTimeMs, "trackPositionMs", trackPositionMs, "playerState", playerState)
-	return buildPlayStatus(trackTimeMs, trackPositionMs, playerState)
+	return &iap.Command{
+		CmdData: buildPlayStatus(trackTimeMs, trackPositionMs, playerState),
+	}
 }
 
 func buildPlayStatus(trackTimeMs, trackPositionMs uint32, playerState byte) []byte {
@@ -50,32 +58,75 @@ func buildPlayStatus(trackTimeMs, trackPositionMs uint32, playerState byte) []by
 	return b
 }
 
-func PlayCurrentSelection()          {}
-func PlayControl(data []byte) []byte { return nil }
+func PlayCurrentSelection() *iap.Command { return nil }
 
-func GetCurrentPlayingTrackIndex() []byte { return nil }
-func SetCurrentPlayingTrack(data []byte)  {}
+type PlayControlCmd byte
 
-func GetIndexedPlayingTrackInfo(data []byte) []byte       { return nil }
-func GetIndexedPlayingTrackTitle(data []byte) []byte      { return nil }
-func GetIndexedPlayingTrackArtistName(data []byte) []byte { return nil }
-func GetIndexedPlayingTrackAlbumName(data []byte) []byte  { return nil }
+const (
+	PlayControlToggle      PlayControlCmd = 0x01
+	PlayControlStop        PlayControlCmd = 0x02
+	PlayControlNextTrack   PlayControlCmd = 0x03
+	PlayControlPrevTrack   PlayControlCmd = 0x04
+	PlayControlStartFF     PlayControlCmd = 0x05
+	PlayControlStartRew    PlayControlCmd = 0x06
+	PlayControlEndFFRew    PlayControlCmd = 0x07
+	PlayControlNext        PlayControlCmd = 0x08
+	PlayControlPrev        PlayControlCmd = 0x09
+	PlayControlPlay        PlayControlCmd = 0x0a
+	PlayControlPause       PlayControlCmd = 0x0b
+	PlayControlNextChapter PlayControlCmd = 0x0c
+	PlayControlPrevChapter PlayControlCmd = 0x0d
+)
 
-func GetShuffle() []byte     { return nil }
-func SetShuffle(data []byte) {}
+func PlayControl(c *iap.Command) *iap.Command {
+	handlePlaybackCommands(PlayControlCmd(c.CmdData[0]))
+	return ExtendedAck(lingo.ExtIfaceACK, c.CmdID, lingo.AckOK)
+}
 
-func GetRepeat() []byte     { return nil }
-func SetRepeat(data []byte) {}
+// handlePlaybackCommands bridges the vehicle iAP commands over to Bluetooth media keys
+func handlePlaybackCommands(cmd PlayControlCmd) {
+	switch cmd {
+	case PlayControlToggle:
+		println("[BRIDGE] Vehicle command: PLAY/PAUSE -> Notifying Phone")
+		ble.PressMediaKey(ble.KeyPlayPause)
+	case PlayControlStop:
+		println("[BRIDGE] Vehicle command: STOP -> Notifying Phone")
+		ble.PressMediaKey(ble.KeyStop)
+	case PlayControlNextTrack:
+		println("[BRIDGE] Vehicle command: NEXT -> Notifying Phone")
+		ble.PressMediaKey(ble.KeyNext)
+	case PlayControlPrevTrack:
+		println("[BRIDGE] Vehicle command: PREVIOUS -> Notifying Phone")
+		ble.PressMediaKey(ble.KeyPrevious)
+	case PlayControlPlay:
+		println("[BRIDGE] Vehicle command: PLAY -> Notifying Phone")
+		ble.PressMediaKey(ble.KeyPlay)
+	}
+	ble.PressMediaKey(ble.KeyRelease)
+}
+func GetCurrentPlayingTrackIndex() *iap.Command       { return nil }
+func SetCurrentPlayingTrack(data []byte) *iap.Command { return nil }
 
-func GetTrackArtworkTimes(data []byte) []byte { return nil }
+func GetIndexedPlayingTrackInfo(data []byte) *iap.Command       { return nil }
+func GetIndexedPlayingTrackTitle(data []byte) *iap.Command      { return nil }
+func GetIndexedPlayingTrackArtistName(data []byte) *iap.Command { return nil }
+func GetIndexedPlayingTrackAlbumName(data []byte) *iap.Command  { return nil }
 
-func GetNumPlayingTracks() []byte { return nil }
+func GetShuffle() *iap.Command            { return nil }
+func SetShuffle(data []byte) *iap.Command { return nil }
+
+func GetRepeat() *iap.Command            { return nil }
+func SetRepeat(data []byte) *iap.Command { return nil }
+
+func GetTrackArtworkTimes(data []byte) *iap.Command { return nil }
+
+func GetNumPlayingTracks() *iap.Command { return nil }
 
 // Audiobook
-func GetCurrentPlayingChapterInfo() []byte       { return nil }
-func SetCurrentPlayingChapter(data []byte)       {}
-func GetCurrentPlayingChapterPlayStatus() []byte { return nil }
-func GetCurrentPlayingChapterName() []byte       { return nil }
+func GetCurrentPlayingChapterInfo() *iap.Command        { return nil }
+func SetCurrentPlayingChapter(data []byte) *iap.Command { return nil }
+func GetCurrentPlayingChapterPlayStatus() *iap.Command  { return nil }
+func GetCurrentPlayingChapterName() *iap.Command        { return nil }
 
-func GetAudiobookSpeed() []byte     { return nil }
-func SetAudiobookSpeed(data []byte) {}
+func GetAudiobookSpeed() *iap.Command            { return nil }
+func SetAudiobookSpeed(data []byte) *iap.Command { return nil }

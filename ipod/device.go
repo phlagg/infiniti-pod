@@ -1,66 +1,106 @@
 package ipod
 
 import (
+	"github.com/phlagg/infiniti-pod/iap"
 	"github.com/phlagg/infiniti-pod/iap/lingo"
-	"github.com/phlagg/infiniti-pod/transport/ble"
 )
 
 const (
-	MajorVersionNumber = 0x01
-	MinorVersionNumber = 0x14
+	GeneralMajorVersionNumber = 0x01
+	GeneralMinorVersionNumber = 0x11
+
+	ExtendedMajorVersionNumber = 0x01
+	ExtendedMinorVersionNumber = 0x14
+
+	DisplayRemoteMajorVersionNumber = 0x01
+	DisplayRemoteMinorVersionNumber = 0x10
+
+	DigitalAudioMajorVersionNumber = 0x01
+	DigitalAudioMinorVersionNumber = 0x12
 )
 
-// handleCarSignals bridges the vehicle iAP commands over to Bluetooth media keys
-func handleCarSignals(code byte) {
-	switch code {
-	case 0x01:
-		println("[BRIDGE] Vehicle command: NEXT -> Notifying Phone")
-		ble.PressMediaKey(ble.KeyNext)
-	case 0x08:
-		println("[BRIDGE] Vehicle command: PREVIOUS -> Notifying Phone")
-		ble.PressMediaKey(ble.KeyPrevious)
-	case 0x02:
-		println("[BRIDGE] Vehicle command: PLAY/PAUSE -> Notifying Phone")
-		ble.PressMediaKey(ble.KeyPlayPause)
-	case 0x00:
-		// Button released event, ignore safely
+// General
+func GeneralAck(ackID byte, cmdIDAckd byte, cmdResultStatus byte) *iap.Command {
+	return &iap.Command{
+		CmdID:   uint16(ackID),
+		CmdData: []byte{cmdResultStatus, cmdIDAckd},
 	}
 }
 
-// General
-func GeneralAck(cmdIDAckd byte, cmdResultStatus byte) []byte {
-	return []byte{lingo.GeneralACK, cmdResultStatus, cmdIDAckd}
-}
-
-func IdentifyDevice() []byte {
+func IdentifyDevice() *iap.Command {
 	return nil
 }
 
-func GetiPodName() []byte {
-	return []byte("Michael's Phone")
-}
-func GetiPodSoftwareVersion() []byte { return nil }
-func GetiPodSerialNum() []byte       { return nil }
-func GetiPodModelNum() []byte        { return nil }
+func GetiPodName() *iap.Command {
+	return &iap.Command{
 
-func GetLingoProtocolVersion() []byte { return nil }
+		CmdData: []byte("Michael's Phone"),
+	}
+}
+func GetiPodSoftwareVersion() *iap.Command { return nil }
+func GetiPodSerialNum() *iap.Command       { return nil }
+func GetiPodModelNum() *iap.Command        { return nil }
+
+func GetLingoProtocolVersion(Lingo byte) *iap.Command {
+	switch Lingo {
+	case lingo.LingoGeneralID:
+		return &iap.Command{
+			Lingo:   Lingo,
+			CmdID:   lingo.GeneralReturnLingoProtocolVersion,
+			CmdData: []byte{GeneralMajorVersionNumber, GeneralMinorVersionNumber},
+		}
+	case lingo.LingoDisplayRemoteID:
+		return &iap.Command{
+			Lingo:   Lingo,
+			CmdID:   lingo.ExtIfaceReturnProtocolVersion,
+			CmdData: []byte{DisplayRemoteMajorVersionNumber, DisplayRemoteMinorVersionNumber},
+		}
+	case lingo.LingoExtendedID:
+		return &iap.Command{
+			Lingo:   Lingo,
+			CmdID:   lingo.ExtIfaceReturnProtocolVersion,
+			CmdData: []byte{ExtendedMajorVersionNumber, ExtendedMinorVersionNumber},
+		}
+	case lingo.LingoDigitalAudioID:
+		return &iap.Command{
+			Lingo:   Lingo,
+			CmdID:   lingo.ExtIfaceReturnProtocolVersion,
+			CmdData: []byte{DigitalAudioMajorVersionNumber, DigitalAudioMinorVersionNumber},
+		}
+	default:
+		return &iap.Command{
+			Lingo:   Lingo,
+			CmdID:   lingo.ExtIfaceReturnProtocolVersion,
+			CmdData: []byte{0, 0},
+		}
+	}
+}
 
 func IdentifyDeviceLingoes() {}
 
-func GetAccessoryInfo() []byte { return nil }
-func GetiPodOptions() []byte   { return nil }
+func GetAccessoryInfo() *iap.Command { return nil }
+func GetiPodOptions() *iap.Command   { return nil }
 
-func GetiPodPreferences() []byte     { return nil }
-func SetiPodPreferences(data []byte) {}
+func GetiPodPreferences() *iap.Command { return nil }
+func SetiPodPreferences(data []byte)   {}
 
 // Extended
-func GetProtocolVersion() []byte {
-	return []byte{MajorVersionNumber, MinorVersionNumber}
+func ExtendedAck(ackID uint16, cmdIDAckd uint16, cmdResultStatus byte) *iap.Command {
+	return &iap.Command{
+		CmdID:   ackID,
+		CmdData: []byte{cmdResultStatus, byte(cmdIDAckd >> 8), byte(cmdIDAckd & 0xFF)},
+	}
 }
 
-func GetArtworkFormats() []byte              { return nil }
-func GetTrackArtworkData(data []byte) []byte { return nil }
+func GetProtocolVersion() *iap.Command {
+	return &iap.Command{
+		CmdData: []byte{ExtendedMajorVersionNumber, ExtendedMinorVersionNumber},
+	}
+}
 
-func SetDisplayImage(data []byte) []byte { return nil }
-func GetMonoDisplayImageLimits() []byte  { return nil }
-func GetColorDisplayImageLimits() []byte { return nil }
+func GetArtworkFormats() *iap.Command              { return nil }
+func GetTrackArtworkData(data []byte) *iap.Command { return nil }
+
+func SetDisplayImage(data []byte) *iap.Command { return nil }
+func GetMonoDisplayImageLimits() *iap.Command  { return nil }
+func GetColorDisplayImageLimits() *iap.Command { return nil }

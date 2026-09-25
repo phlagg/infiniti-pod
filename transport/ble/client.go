@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	adapter              = bluetooth.DefaultAdapter
-	hidControl           bluetooth.Characteristic
-	reportCharacteristic bluetooth.Characteristic
+	adapter         = bluetooth.DefaultAdapter
+	hidControl      bluetooth.Characteristic
+	inputReportChar bluetooth.Characteristic
 )
 
 type BLEEvent struct {
@@ -37,7 +37,7 @@ func InitRemote(disconnect func()) error {
 		Characteristics: []bluetooth.CharacteristicConfig{
 			{
 				UUID:  bluetooth.CharacteristicUUIDHIDInformation,
-				Value: []byte{0x11, 0x01, 0x00, 0x03},
+				Value: []byte{0x11, 0x01, 0x00, 0x02},
 				Flags: bluetooth.CharacteristicReadPermission,
 			},
 			// 2. Report Map (Your custom media ReportDescriptor)
@@ -65,9 +65,8 @@ func InitRemote(disconnect func()) error {
 			},
 			// 5. Actual HID Media Data Report (The keypress engine)
 			{
-				Handle:        &reportCharacteristic,
+				Handle:        &inputReportChar,
 				UUID:          bluetooth.CharacteristicUUIDReport,
-				Value:         []byte{0x00},
 				Flags:         bluetooth.CharacteristicReadPermission | bluetooth.CharacteristicNotifyPermission,
 				ReadSecurity:  bluetooth.SecurityEncrypted,
 				WriteSecurity: bluetooth.SecurityEncrypted,
@@ -156,14 +155,16 @@ func GetMACAddress() string {
 // PressMediaKey writes a raw keycode change value directly to the connected phone
 func PressMediaKey(keyMask byte) error {
 	// Send active key down event
-	pressBuffer := []byte{0x01, keyMask}
-	_, err := reportCharacteristic.Write(pressBuffer)
+	pressBuffer := []byte{keyMask}
+	_, err := inputReportChar.Write(pressBuffer)
 	if err != nil {
 		return err
 	}
-	// Instantly release the key state so it doesn't get stuck in a "long-press" loop
-	releaseBuffer := []byte{0x01, KeyRelease}
-	_, err = reportCharacteristic.Write(releaseBuffer)
+
+	time.Sleep(30 * time.Millisecond)
+	// Release the key state so it doesn't get stuck in a "long-press" loop
+	releaseBuffer := []byte{KeyRelease}
+	_, err = inputReportChar.Write(releaseBuffer)
 	return err
 }
 

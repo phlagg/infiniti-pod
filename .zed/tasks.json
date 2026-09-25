@@ -16,17 +16,18 @@
 	},
 	{
 		"label":   "TinyGo: Test",
-		"command": "tinygo",
+		"command": "cd ./host-tests && go",
 		"args": [
 			"test",
-			"./..."
+			"-v",
+			"."
 		],
 		"cwd": "$ZED_WORKTREE_ROOT",
 		"env": {
+      "GOFLAGS": "-count=1",
 			"ZED_TINYGO_MANAGED": "1"
 		},
 		"save": "all",
-		"hide": "on_success"
 	},
 	{
 		"label":   "TinyGo: Size report (nicenano)",

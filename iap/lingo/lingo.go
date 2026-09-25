@@ -1,16 +1,16 @@
 package lingo
 
 const (
-	LingoGeneralID       = 0x00
-	LingoSimpleRemoteID  = 0x02
-	LingoDisplayRemoteID = 0x03
-	LingoExtendedID      = 0x04
-	LingoUSBHostID       = 0x06
-	LingoRFTunerID       = 0x07
-	LingoEqID            = 0x08
-	LingoSportsID        = 0x09
-	LingoDigitalAudioID  = 0x0A
-	LingoStorageID       = 0x0C
+	LingoGeneralID       byte = 0x00
+	LingoSimpleRemoteID  byte = 0x02
+	LingoDisplayRemoteID byte = 0x03
+	LingoExtendedID      byte = 0x04
+	LingoUSBHostID       byte = 0x06
+	LingoRFTunerID       byte = 0x07
+	LingoEqID            byte = 0x08
+	LingoSportsID        byte = 0x09
+	LingoDigitalAudioID  byte = 0x0A
+	LingoStorageID       byte = 0x0C
 )
 
 // Implementing iAP Extended Interface Mode from pg 342 of specification

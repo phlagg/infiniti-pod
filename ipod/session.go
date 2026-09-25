@@ -1,8 +1,10 @@
 package ipod
 
-// General
-func OpenDataSession(data []byte) []byte  { return nil }
-func CloseDataSession(data []byte) []byte { return nil }
+import "github.com/phlagg/infiniti-pod/iap"
 
-func HandleDevDataTransfer(data []byte) []byte  { return nil }
-func HandleiPodDataTransfer(data []byte) []byte { return nil }
+// General
+func OpenDataSession(data []byte) *iap.Command  { return nil }
+func CloseDataSession(data []byte) *iap.Command { return nil }
+
+func HandleDevDataTransfer(data []byte) *iap.Command  { return nil }
+func HandleiPodDataTransfer(data []byte) *iap.Command { return nil }

@@ -9,7 +9,7 @@ type Command struct {
 	CmdData []byte // raw payload bytes after the command ID
 }
 
-func parseCommand(pkt *Packet) Command {
+func parsePacket(pkt *RecievedPacket) Command {
 	switch pkt.LingoID {
 	case lingo.LingoGeneralID:
 		return Command{

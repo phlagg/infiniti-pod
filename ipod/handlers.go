@@ -6,60 +6,28 @@ import (
 )
 
 type commandEntry struct {
-	CmdID  uint16
-	RespID uint16
-	Exec   func(cmd iap.Command) []byte
+	CmdID uint16
+	Exec  func(cmd iap.Command) *iap.Command
 }
 
-func handleCommand(cmd iap.Command) iap.Response {
+func handleCommand(cmd iap.Command) *iap.Command {
+	var commandTable []commandEntry = nil
 
 	switch cmd.Lingo {
 	case lingo.LingoGeneralID:
-		return handleLingo(cmd, GeneralTable)
+		commandTable = GeneralTable
 	case lingo.LingoExtendedID:
-		return handleLingo(cmd, ExtendedTable)
+		commandTable = ExtendedTable
 	default:
 
 	}
-
-	return iap.Response{}
-}
-
-func handleLingo(cmd iap.Command, table []commandEntry) iap.Response {
-	for _, e := range table {
+	for _, e := range commandTable {
 		if e.CmdID == cmd.CmdID {
-			return iap.Response{
-				Lingo:   cmd.Lingo,
-				CmdID:   e.RespID,
-				CmdData: e.Exec(cmd),
-			}
+			resp := e.Exec(cmd)
+			resp.Lingo = cmd.Lingo
+			return resp
+
 		}
 	}
-	return iap.Response{}
+	return &iap.Command{}
 }
-
-// var ExtendedTable = []commandEntry{
-// 	{
-// 		CmdID:  lingo.ExtIfaceRequestProtocolVersion,
-// 		RespID: lingo.ExtIfaceReturnProtocolVersion,
-// 		Exec:   func(cmd iap.Command) []byte { return GetProtocolVersion() },
-// 	},
-// 	{
-// 		CmdID:  lingo.ExtIfaceRequestiPodName,
-// 		RespID: lingo.ExtIfaceReturniPodName,
-// 		Exec:   func(cmd iap.Command) []byte { return GetiPodName() },
-// 	},
-// 	{
-// 		CmdID:  lingo.ExtIfaceGetPlayStatus,
-// 		RespID: lingo.ExtIfaceReturnPlayStatus,
-// 		Exec:   func(cmd iap.Command) []byte { return GetPlayStatus() },
-// 	},
-// 	{
-// 		CmdID:  lingo.ExtIfaceSetPlayStatusChangeNotification,
-// 		RespID: lingo.ExtIfaceReturnPlayStatus,
-// 		Exec: func(cmd iap.Command) []byte {
-// 			SetPlayStatusChangeNotification(cmd.CmdData[0])
-// 			return []byte{0x00}
-// 		},
-// 	},
-// }

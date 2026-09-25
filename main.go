@@ -13,6 +13,7 @@ import (
 var bleDisconnected uint32
 
 func main() {
+	time.Sleep(time.Second * 2)
 	logInfo("Initializing Infiniti-Pod Protocol Systems...")
 
 	// 1. Initialize Car Bus Channel

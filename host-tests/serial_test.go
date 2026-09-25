@@ -23,9 +23,15 @@ var cases = []struct {
 		note:     "Sends Ack",
 	},
 	{
-		name:     "RequestVersion",
+		name:     "RequestExtendedLingoVersion",
 		payload:  "FF 55 03 04 00 12 E7",
 		expected: "ff55050400130114cf",
+		note:     "Starts Handshake",
+	},
+	{
+		name:     "RequestGeneralLingoVersion",
+		payload:  "FF 55 02 00 0F EF",
+		expected: "ff550400100111da",
 		note:     "Starts Handshake",
 	},
 	{
@@ -42,30 +48,60 @@ var cases = []struct {
 	},
 
 	// Button commands
-	// {
-	// 	name:     "Next Track",
-	// 	payload:  "FF55AA0302000001FA",
-	// 	expected: "01",
-	// 	note:     "Triggers ble.KeyNext",
-	// },
-	// {
-	// 	name:     "Previous Track",
-	// 	payload:  "FF55AA0302000008F3",
-	// 	expected: "08",
-	// 	note:     "Triggers ble.KeyPrevious",
-	// },
-	// {
-	// 	name:     "Play / Pause",
-	// 	payload:  "FF55AA0302000002F9",
-	// 	expected: "02",
-	// 	note:     "Triggers ble.KeyPlayPause",
-	// },
-	// {
-	// 	name:     "Release Button",
-	// 	payload:  "FF55AA0302000000FB",
-	// 	expected: "00",
-	// 	note:     "Safely Ignored",
-	// },
+	{
+		name:     "Play",
+		payload:  "FF 55 04 04 00 29 0A C5",
+		expected: "ff5506040001000029cc",
+		note:     "Triggers ble.KeyPlay",
+	},
+	{
+		name:     "Wait",
+		payload:  "FF 55 03 00 00 00 FD",
+		expected: "ff55020000fe",
+		note:     "Waiting...",
+	},
+	{
+		name:     "Next Track",
+		payload:  "FF 55 04 04 00 29 03 CC",
+		expected: "ff5506040001000029cc",
+		note:     "Triggers ble.KeyNext",
+	},
+	{
+		name:     "Wait",
+		payload:  "FF 55 03 00 00 00 FD",
+		expected: "ff55020000fe",
+		note:     "Waiting...",
+	},
+	{
+		name:     "Stop",
+		payload:  "FF 55 04 04 00 29 02 CD",
+		expected: "ff5506040001000029cc",
+		note:     "Triggers ble.KeyPlayPause",
+	},
+	{
+		name:     "Wait",
+		payload:  "FF 55 03 00 00 00 FD",
+		expected: "ff55020000fe",
+		note:     "Waiting...",
+	},
+	{
+		name:     "Previous Track",
+		payload:  "FF 55 04 04 00 29 04 CB",
+		expected: "ff5506040001000029cc",
+		note:     "Triggers ble.KeyPrevious",
+	},
+	{
+		name:     "Wait",
+		payload:  "FF 55 03 00 00 00 FD",
+		expected: "ff55020000fe",
+		note:     "Waiting...",
+	},
+	{
+		name:     "Play / Pause",
+		payload:  "FF 55 04 04 00 29 01 CE",
+		expected: "ff5506040001000029cc",
+		note:     "Triggers ble.KeyPlayPause",
+	},
 }
 
 func TestHostCommands(t *testing.T) {
@@ -88,6 +124,7 @@ func TestHostCommands(t *testing.T) {
 				t.Fatalf("got %s, want %s (%s)", gotHex, tc.expected, tc.note)
 			}
 		})
+		time.Sleep(1 * time.Second)
 	}
 }
 

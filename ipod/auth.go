@@ -1,8 +1,10 @@
 package ipod
 
-// General
-func GetDevAuthenticationInfo() []byte      { return nil }
-func GetDevAuthenticationSignature() []byte { return nil }
+import "github.com/phlagg/infiniti-pod/iap"
 
-func GetiPodAuthenticationInfo() []byte      { return nil }
-func GetiPodAuthenticationSignature() []byte { return nil }
+// General
+func GetDevAuthenticationInfo() *iap.Command      { return nil }
+func GetDevAuthenticationSignature() *iap.Command { return nil }
+
+func GetiPodAuthenticationInfo() *iap.Command      { return nil }
+func GetiPodAuthenticationSignature() *iap.Command { return nil }

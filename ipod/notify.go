@@ -1,19 +1,23 @@
 package ipod
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/phlagg/infiniti-pod/iap"
+)
 
 // General
-func HandleStateChange(data []byte) []byte { return nil }
+func HandleStateChange(data []byte) *iap.Command { return nil }
 
-func SetEventNotification(data []byte) []byte   { return nil }
-func HandleiPodNotification(data []byte) []byte { return nil }
+func SetEventNotification(data []byte) *iap.Command   { return nil }
+func HandleiPodNotification(data []byte) *iap.Command { return nil }
 
-func GetEventNotification() []byte              { return nil }
-func GetSupportedEventNotification() []byte     { return nil }
-func GetiPodOptionsForLingo(data []byte) []byte { return nil }
+func GetEventNotification() *iap.Command              { return nil }
+func GetSupportedEventNotification() *iap.Command     { return nil }
+func GetiPodOptionsForLingo(data []byte) *iap.Command { return nil }
 
 // Extended
-func SetPlayStatusChangeNotification(cmd []byte) error {
+func SetPlayStatusChangeNotification(cmd []byte) (*iap.Command, error) {
 	switch len(cmd) {
 	case 1:
 		switch cmd[0] {
@@ -22,7 +26,7 @@ func SetPlayStatusChangeNotification(cmd []byte) error {
 		case 0x01:
 			println("Enabled play status event notifications")
 		default:
-			return errors.New("[Playback Engine] invalid status cmd")
+			return nil, errors.New("[Playback Engine] invalid status cmd")
 		}
 	case 4:
 		maskBits := uint16(cmd[2]<<8 | cmd[3])
@@ -51,7 +55,7 @@ func SetPlayStatusChangeNotification(cmd []byte) error {
 			// Track lyrics ready (if the track has lyrics)
 		}
 	default:
-		return errors.New("[Playback Engine] invalid status cmd")
+		return nil, errors.New("[Playback Engine] invalid status cmd")
 	}
-	return nil
+	return nil, nil
 }
