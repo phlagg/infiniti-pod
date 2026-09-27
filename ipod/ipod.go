@@ -29,7 +29,11 @@ type Response struct {
 	Payload []byte
 }
 
-func Run() {
+func Run(transport uint8, shouldBreak func() bool) {
+	if shouldBreak() {
+		return
+	}
+
 	if currentState != nextState {
 		currentState = nextState
 		logiPodStatus(currentState.Name)

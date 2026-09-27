@@ -1,9 +1,12 @@
 package ipod
 
 import (
+	"machine/usb/hid/keyboard"
+
 	"github.com/phlagg/infiniti-pod/iap"
 	"github.com/phlagg/infiniti-pod/iap/lingo"
 	"github.com/phlagg/infiniti-pod/transport/ble"
+	"github.com/phlagg/infiniti-pod/transport/usb"
 )
 
 const (
@@ -79,12 +82,13 @@ const (
 )
 
 func PlayControl(c *iap.Command) *iap.Command {
-	handlePlaybackCommands(PlayControlCmd(c.CmdData[0]))
+	handlePlaybackCommandsUSB(PlayControlCmd(c.CmdData[0]))
 	return ExtendedAck(lingo.ExtIfaceACK, c.CmdID, lingo.AckOK)
 }
 
 // handlePlaybackCommands bridges the vehicle iAP commands over to Bluetooth media keys
-func handlePlaybackCommands(cmd PlayControlCmd) {
+
+func handlePlaybackCommandsBLE(cmd PlayControlCmd) {
 	switch cmd {
 	case PlayControlToggle:
 		println("[BRIDGE] Vehicle command: PLAY/PAUSE -> Notifying Phone")
@@ -104,6 +108,28 @@ func handlePlaybackCommands(cmd PlayControlCmd) {
 	}
 	ble.PressMediaKey(ble.KeyRelease)
 }
+
+func handlePlaybackCommandsUSB(cmd PlayControlCmd) {
+	switch cmd {
+	case PlayControlToggle:
+		println("[BRIDGE] Vehicle command: PLAY/PAUSE -> Notifying Android Phone")
+		usb.SendKey(keyboard.KeyMediaPlayPause)
+	case PlayControlStop:
+		println("[BRIDGE] Vehicle command: STOP -> Notifying Android Phone")
+		usb.SendKey(keyboard.KeyMediaStop)
+	case PlayControlNextTrack:
+		println("[BRIDGE] Vehicle command: NEXT -> Notifying Android Phone")
+		// usb.SendAndroidShortcut(keyboard.KeyModifierLeftShift, keyboard.KeyN)
+		usb.SendKey(keyboard.KeyMediaNextTrack)
+	case PlayControlPrevTrack:
+		println("[BRIDGE] Vehicle command: PREVIOUS -> Notifying Android Phone")
+		usb.SendKey(keyboard.KeyMediaPrevTrack)
+	case PlayControlPlay:
+		println("[BRIDGE] Vehicle command: PLAY -> Notifying Android Phone")
+		usb.SendKey(keyboard.KeyMediaPlay)
+	}
+}
+
 func GetCurrentPlayingTrackIndex() *iap.Command       { return nil }
 func SetCurrentPlayingTrack(data []byte) *iap.Command { return nil }
 

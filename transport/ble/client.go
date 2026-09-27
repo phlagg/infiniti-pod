@@ -11,6 +11,7 @@ var (
 	adapter         = bluetooth.DefaultAdapter
 	hidControl      bluetooth.Characteristic
 	inputReportChar bluetooth.Characteristic
+	adv             *bluetooth.Advertisement
 )
 
 type BLEEvent struct {
@@ -124,7 +125,11 @@ func InitRemote(disconnect func()) error {
 
 // StartBeacon configures your custom advertising data and launches the radio beacon
 func StartBeacon() error {
-	adv := adapter.DefaultAdvertisement()
+	adv = adapter.DefaultAdvertisement()
+
+	if adv != nil {
+		_ = adv.Stop()
+	}
 
 	// Configure the beacon so Android and iOS recognize it as a pairing-ready keyboard remote
 	err := adv.Configure(bluetooth.AdvertisementOptions{
@@ -141,6 +146,13 @@ func StartBeacon() error {
 	}
 
 	return adv.Start()
+}
+
+func StopBeacon() error {
+	if adv != nil {
+		return adv.Stop()
+	}
+	return nil
 }
 
 // GetMACAddress pulls the live physical chip string safely
